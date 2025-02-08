@@ -46,17 +46,17 @@
     };
   };
 
-  outputs = srcs@{ self, ... }:
+  outputs = inputs@{ self, nixpkgs, ... }:
     let
-      pinned = import srcs.nixpkgs {
+      srcs = builtins.removeAttrs inputs [ "self" "nixpkgs" ];
+      pinned = import nixpkgs {
         system = "aarch64-linux";
         overlays = with self.overlays; [ core libcamera ];
       };
     in {
       overlays = {
-        core = import ./overlays (builtins.removeAttrs srcs [ "self" ]);
-        libcamera = import ./overlays/libcamera.nix
-          (builtins.removeAttrs srcs [ "self" ]);
+        core = import ./overlays srcs;
+        libcamera = import ./overlays/libcamera.nix srcs;
       };
       nixosModules = {
         raspberry-pi = import ./rpi {
@@ -67,7 +67,7 @@
         sd-image = import ./sd-image;
       };
       nixosConfigurations = {
-        rpi-example = srcs.nixpkgs.lib.nixosSystem {
+        rpi-example = nixpkgs.lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             self.nixosModules.raspberry-pi
@@ -93,10 +93,8 @@
           wireless-firmware = pinned.raspberrypiWirelessFirmware;
           uboot-rpi-arm64 = pinned.uboot-rpi-arm64;
         } // kernels;
-      formatter = srcs.nixpkgs.lib.genAttrs [
-        "aarch64-linux"
-        "aarch64-darwin"
-        "x86_64-linux"
-      ] (system: srcs.nixpkgs.legacyPackages.${system}.nixfmt-classic);
+      formatter =
+        nixpkgs.lib.genAttrs [ "aarch64-linux" "aarch64-darwin" "x86_64-linux" ]
+        (system: nixpkgs.legacyPackages.${system}.nixfmt-classic);
     };
 }
