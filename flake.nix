@@ -49,7 +49,9 @@
   outputs = inputs@{ self, nixpkgs, ... }:
     let
       inherit (nixpkgs) lib;
+
       srcs = builtins.removeAttrs inputs [ "self" "nixpkgs" ];
+
       pinned = import nixpkgs {
         system = "aarch64-linux";
         overlays = with self.overlays; [ core libcamera ];
@@ -59,6 +61,7 @@
         core = import ./overlays srcs;
         libcamera = import ./overlays/libcamera.nix srcs;
       };
+
       nixosModules = {
         raspberry-pi = import ./rpi {
           inherit pinned;
@@ -67,6 +70,7 @@
         };
         sd-image = import ./sd-image;
       };
+
       nixosConfigurations = {
         rpi-example = lib.nixosSystem {
           system = "aarch64-linux";
@@ -77,7 +81,9 @@
           ];
         };
       };
+
       checks.aarch64-linux = self.packages.aarch64-linux;
+
       packages.aarch64-linux = let
         kernels = lib.foldlAttrs f { } pinned.rpi-kernels;
         f = acc: kernel-version: board-attr-set:
@@ -93,6 +99,7 @@
         wireless-firmware = pinned.raspberrypiWirelessFirmware;
         uboot-rpi-arm64 = pinned.uboot-rpi-arm64;
       } // kernels;
+
       formatter =
         lib.genAttrs [ "aarch64-linux" "aarch64-darwin" "x86_64-linux" ]
         (system: nixpkgs.legacyPackages.${system}.nixfmt-classic);
