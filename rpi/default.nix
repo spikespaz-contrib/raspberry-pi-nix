@@ -10,48 +10,48 @@ let
 in {
   imports = [ ./config.nix ./i2c.nix ];
 
-  options = with lib; {
+  options = {
     raspberry-pi-nix = {
-      kernel-version = mkOption {
+      kernel-version = lib.mkOption {
         default = "v6_6_51";
-        type = types.str;
+        type = lib.types.str;
         description = "Kernel version to build.";
       };
-      board = mkOption {
-        type = types.enum [ "bcm2711" "bcm2712" ];
+      board = lib.mkOption {
+        type = lib.types.enum [ "bcm2711" "bcm2712" ];
         description = ''
           The kernel board version to build.
           Examples at: https://www.raspberrypi.com/documentation/computers/linux_kernel.html#native-build-configuration
           without the _defconfig part.
         '';
       };
-      firmware-partition-label = mkOption {
+      firmware-partition-label = lib.mkOption {
         default = "FIRMWARE";
-        type = types.str;
+        type = lib.types.str;
         description = "label of rpi firmware partition";
       };
       pin-inputs = {
-        enable = mkOption {
+        enable = lib.mkOption {
           default = true;
-          type = types.bool;
+          type = lib.types.bool;
           description = ''
             Whether to pin the kernel to the latest cachix build.
           '';
         };
       };
       firmware-migration-service = {
-        enable = mkOption {
+        enable = lib.mkOption {
           default = true;
-          type = types.bool;
+          type = lib.types.bool;
           description = ''
             Whether to run the migration service automatically or not.
           '';
         };
       };
       libcamera-overlay = {
-        enable = mkOption {
+        enable = lib.mkOption {
           default = true;
-          type = types.bool;
+          type = lib.types.bool;
           description = ''
             If enabled then the libcamera overlay is applied which
             overrides libcamera with the rpi fork.
@@ -59,9 +59,9 @@ in {
         };
       };
       uboot = {
-        enable = mkOption {
+        enable = lib.mkOption {
           default = false;
-          type = types.bool;
+          type = lib.types.bool;
           description = ''
             If enabled then uboot is used as the bootloader. If disabled
             then the linux kernel is installed directly into the
@@ -74,7 +74,7 @@ in {
           '';
         };
 
-        package = mkPackageOption pkgs "uboot-rpi-arm64" { };
+        package = lib.mkPackageOption pkgs "uboot-rpi-arm64" { };
       };
     };
   };

@@ -19,22 +19,20 @@
 
 { modulesPath, config, lib, pkgs, ... }:
 
-with lib;
-
 let
   rootfsImage = pkgs.callPackage "${modulesPath}/../lib/make-ext4-fs.nix" ({
     inherit (config.sdImage) storePaths;
     compressImage = true;
     populateImageCommands = config.sdImage.populateRootCommands;
     volumeLabel = "NIXOS_SD";
-  } // optionalAttrs (config.sdImage.rootPartitionUUID != null) {
+  } // lib.optionalAttrs (config.sdImage.rootPartitionUUID != null) {
     uuid = config.sdImage.rootPartitionUUID;
   });
 in {
   imports = [ ];
 
   options.sdImage = {
-    imageName = mkOption {
+    imageName = lib.mkOption {
       default =
         "${config.sdImage.imageBaseName}-${config.system.nixos.label}-${pkgs.stdenv.hostPlatform.system}.img";
       description = ''
@@ -42,23 +40,23 @@ in {
       '';
     };
 
-    imageBaseName = mkOption {
+    imageBaseName = lib.mkOption {
       default = "nixos-sd-image";
       description = ''
         Prefix of the name of the generated image file.
       '';
     };
 
-    storePaths = mkOption {
-      type = with types; listOf package;
-      example = literalExpression "[ pkgs.stdenv ]";
+    storePaths = lib.mkOption {
+      type = with lib.types; listOf package;
+      example = lib.literalExpression "[ pkgs.stdenv ]";
       description = ''
         Derivations to be included in the Nix store in the generated SD image.
       '';
     };
 
-    firmwarePartitionOffset = mkOption {
-      type = types.int;
+    firmwarePartitionOffset = lib.mkOption {
+      type = lib.types.int;
       default = 8;
       description = ''
         Gap in front of the /boot/firmware partition, in mebibytes (1024×1024
@@ -73,8 +71,8 @@ in {
       '';
     };
 
-    firmwarePartitionID = mkOption {
-      type = types.str;
+    firmwarePartitionID = lib.mkOption {
+      type = lib.types.str;
       default = "0x2178694e";
       description = ''
         Volume ID for the /boot/firmware partition on the SD card. This value
@@ -82,8 +80,8 @@ in {
       '';
     };
 
-    rootPartitionUUID = mkOption {
-      type = types.nullOr types.str;
+    rootPartitionUUID = lib.mkOption {
+      type = with lib.types; nullOr str;
       default = null;
       example = "14e19a7b-0ae0-484d-9d54-43bd6fdc20c7";
       description = ''
@@ -91,8 +89,8 @@ in {
       '';
     };
 
-    firmwareSize = mkOption {
-      type = types.int;
+    firmwareSize = lib.mkOption {
+      type = lib.types.int;
       # As of 2019-08-18 the Raspberry pi firmware + u-boot takes ~18MiB
       default = 128;
       description = ''
@@ -100,9 +98,9 @@ in {
       '';
     };
 
-    populateFirmwareCommands = mkOption {
-      example =
-        literalExpression "'' cp \${pkgs.myBootLoader}/u-boot.bin firmware/ ''";
+    populateFirmwareCommands = lib.mkOption {
+      example = lib.literalExpression
+        "'' cp \${pkgs.myBootLoader}/u-boot.bin firmware/ ''";
       description = ''
         Shell commands to populate the ./firmware directory.
         All files in that directory are copied to the
@@ -110,8 +108,8 @@ in {
       '';
     };
 
-    populateRootCommands = mkOption {
-      example = literalExpression
+    populateRootCommands = lib.mkOption {
+      example = lib.literalExpression
         "''\${config.boot.loader.generic-extlinux-compatible.populateCmd} -c \${config.system.build.toplevel} -d ./files/boot''";
       description = ''
         Shell commands to populate the ./files directory.
@@ -121,8 +119,8 @@ in {
       '';
     };
 
-    postBuildCommands = mkOption {
-      example = literalExpression
+    postBuildCommands = lib.mkOption {
+      example = lib.literalExpression
         "'' dd if=\${pkgs.myBootLoader}/SPL of=$img bs=1024 seek=1 conv=notrunc ''";
       default = "";
       description = ''
@@ -131,8 +129,8 @@ in {
       '';
     };
 
-    compressImage = mkOption {
-      type = types.bool;
+    compressImage = lib.mkOption {
+      type = lib.types.bool;
       default = true;
       description = ''
         Whether the SD image should be compressed using
@@ -140,8 +138,8 @@ in {
       '';
     };
 
-    expandOnBoot = mkOption {
-      type = types.bool;
+    expandOnBoot = lib.mkOption {
+      type = lib.types.bool;
       default = true;
       description = ''
         Whether to configure the sd image to expand it's partition on boot.
