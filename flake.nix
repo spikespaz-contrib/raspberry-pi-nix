@@ -48,6 +48,7 @@
 
   outputs = inputs@{ self, nixpkgs, ... }:
     let
+      inherit (nixpkgs) lib;
       srcs = builtins.removeAttrs inputs [ "self" "nixpkgs" ];
       pinned = import nixpkgs {
         system = "aarch64-linux";
@@ -67,7 +68,7 @@
         sd-image = import ./sd-image;
       };
       nixosConfigurations = {
-        rpi-example = nixpkgs.lib.nixosSystem {
+        rpi-example = lib.nixosSystem {
           system = "aarch64-linux";
           modules = [
             self.nixosModules.raspberry-pi
@@ -77,24 +78,23 @@
         };
       };
       checks.aarch64-linux = self.packages.aarch64-linux;
-      packages.aarch64-linux = with pinned.lib;
-        let
-          kernels = foldlAttrs f { } pinned.rpi-kernels;
-          f = acc: kernel-version: board-attr-set:
-            foldlAttrs (acc: board-version: drv:
-              acc // {
-                "linux-${kernel-version}-${board-version}" = drv;
-              }) acc board-attr-set;
-        in {
-          example-sd-image =
-            self.nixosConfigurations.rpi-example.config.system.build.sdImage;
-          firmware = pinned.raspberrypifw;
-          libcamera = pinned.libcamera;
-          wireless-firmware = pinned.raspberrypiWirelessFirmware;
-          uboot-rpi-arm64 = pinned.uboot-rpi-arm64;
-        } // kernels;
+      packages.aarch64-linux = let
+        kernels = lib.foldlAttrs f { } pinned.rpi-kernels;
+        f = acc: kernel-version: board-attr-set:
+          lib.foldlAttrs (acc: board-version: drv:
+            acc // {
+              "linux-${kernel-version}-${board-version}" = drv;
+            }) acc board-attr-set;
+      in {
+        example-sd-image =
+          self.nixosConfigurations.rpi-example.config.system.build.sdImage;
+        firmware = pinned.raspberrypifw;
+        libcamera = pinned.libcamera;
+        wireless-firmware = pinned.raspberrypiWirelessFirmware;
+        uboot-rpi-arm64 = pinned.uboot-rpi-arm64;
+      } // kernels;
       formatter =
-        nixpkgs.lib.genAttrs [ "aarch64-linux" "aarch64-darwin" "x86_64-linux" ]
+        lib.genAttrs [ "aarch64-linux" "aarch64-darwin" "x86_64-linux" ]
         (system: nixpkgs.legacyPackages.${system}.nixfmt-classic);
     };
 }
