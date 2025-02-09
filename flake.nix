@@ -63,11 +63,7 @@
       };
 
       nixosModules = {
-        raspberry-pi = import ./rpi {
-          inherit pinned;
-          core-overlay = self.overlays.core;
-          libcamera-overlay = self.overlays.libcamera;
-        };
+        raspberry-pi = import ./rpi { inherit self pinned; };
         sd-image = import ./sd-image;
       };
 

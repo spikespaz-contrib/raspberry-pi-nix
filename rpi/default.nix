@@ -1,4 +1,4 @@
-{ pinned, core-overlay, libcamera-overlay, }:
+{ self, pinned }:
 { lib, pkgs, config, ... }:
 let
   cfg = config.raspberry-pi-nix;
@@ -297,9 +297,9 @@ in {
 
     nixpkgs = {
       overlays = let
-        selectedOverlays = [ core-overlay ]
+        selectedOverlays = [ self.overlays.core ]
           ++ lib.optional config.raspberry-pi-nix.libcamera-overlay.enable
-          libcamera-overlay;
+          self.overlays.libcamera;
         composedOverlay = lib.composeManyExtensions selectedOverlays;
         overlayApplied = pinned.extend composedOverlay;
         pinnedNames = builtins.attrNames (composedOverlay { } { });
