@@ -2,7 +2,7 @@
   description = "raspberry-pi nixos configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11-small";
     u-boot-src = {
       flake = false;
       url = "https://ftp.denx.de/pub/u-boot/u-boot-2024.07.tar.bz2";
