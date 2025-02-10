@@ -1,4 +1,4 @@
-{ rpicam-apps-src, lib, pkgs, stdenv, }:
+{ lib, pkgs, stdenv, rpicam-apps-src }:
 
 stdenv.mkDerivation {
   pname = "libcamera-apps";

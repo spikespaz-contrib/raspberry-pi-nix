@@ -57,10 +57,7 @@
         overlays = with self.overlays; [ core libcamera ];
       };
     in {
-      overlays = {
-        core = import ./overlays srcs;
-        libcamera = import ./overlays/libcamera.nix srcs;
-      };
+      overlays = import ./overlays { inherit lib self srcs; };
 
       nixosModules = {
         raspberry-pi = import ./rpi { inherit self pinned; };
@@ -81,20 +78,23 @@
       checks.aarch64-linux = self.packages.aarch64-linux;
 
       packages.aarch64-linux = let
-        kernels = lib.foldlAttrs f { } pinned.rpi-kernels;
-        f = acc: kernel-version: board-attr-set:
-          lib.foldlAttrs (acc: board-version: drv:
-            acc // {
-              "linux-${kernel-version}-${board-version}" = drv;
-            }) acc board-attr-set;
-      in {
-        example-sd-image =
-          self.nixosConfigurations.rpi-example.config.system.build.sdImage;
-        firmware = pinned.raspberrypifw;
-        libcamera = pinned.libcamera;
-        wireless-firmware = pinned.raspberrypiWirelessFirmware;
-        uboot-rpi-arm64 = pinned.uboot-rpi-arm64;
-      } // kernels;
+        kernels = lib.foldlAttrs (acc: version: boardAttrs:
+          acc // lib.foldlAttrs
+          (acc: board: drv: acc // { "linux-${version}-${board}" = drv; }) { }
+          boardAttrs) { } pinned.rpi-kernels;
+        packages = {
+          inherit (pinned)
+            libcamera-apps libcamera libpisp raspberrypi-wireless-firmware
+            raspberrypi-firmware uboot-rpi-arm64;
+        };
+        special = {
+          example-sd-image =
+            self.nixosConfigurations.rpi-example.config.system.build.sdImage;
+          # Alias
+          wireless-firmware = pinned.raspberrypi-wireless-firmware;
+        };
+
+      in kernels // packages // special;
 
       formatter =
         lib.genAttrs [ "aarch64-linux" "aarch64-darwin" "x86_64-linux" ]

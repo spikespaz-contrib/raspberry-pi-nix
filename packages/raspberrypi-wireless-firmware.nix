@@ -1,5 +1,4 @@
-{ bluez-firmware, firmware-nonfree }:
-{ lib, stdenvNoCC }:
+{ lib, stdenvNoCC, bluez-firmware, firmware-nonfree }:
 
 stdenvNoCC.mkDerivation {
   pname = "raspberrypi-wireless-firmware";
